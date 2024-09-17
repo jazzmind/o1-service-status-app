@@ -285,15 +285,15 @@ Define your services with the following structure:
 ```json
 [
   {
-    "name": "Global Login API",
+    "name": "Global API",
     "url": "https://login-api.example.com/stack",
     "expectedResponse": { "message": "Stack not found" },
     "type": "json",
     "region": "Global"
   },
   {
-    "name": "USA Admin API",
-    "url": "https://usa.example.com/api/health?appkey=1234",
+    "name": "Admin API",
+    "url": "https://usa.example.com/api/health",
     "expectedResponseKey": "status",
     "expectedResponseValue": "success",
     "type": "json_key",
