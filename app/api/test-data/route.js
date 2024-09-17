@@ -10,7 +10,6 @@ import {
   getDocs,
   Timestamp,
 } from 'firebase/firestore';
-import services from '@/config/services.json'; // Assuming services is an array of service objects
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -36,6 +35,12 @@ export async function GET(request) {
 }
 
 async function injectTestData() {
+  // get services from environment variable or config file
+  let services = [];
+  const envServices = process.env.SERVICES;
+  if (envServices) {
+    services = JSON.parse(envServices);
+  }
   try {
     // Define test downtime events
     const testDowntimeEvents = [];

@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
-import services from '@/config/services.json'; // Assuming services is an array of service objects
 
 export async function GET() {
+  // get services from environment variable or config file
+  let services = [];
+  const envServices = process.env.SERVICES;
+  if (envServices) {
+    services = JSON.parse(envServices);
+  }
   try {
     for (const service of services) {
       let response = null;
