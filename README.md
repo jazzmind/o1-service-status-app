@@ -37,7 +37,7 @@ An open-source server status tracking application built with Next.js, Tailwind C
 
 ## Demo
 
-[Live Demo](https://your-app.vercel.app/)
+[Live Demo](https://o1-service-status-app.vercel.app/)
 
 ---
 
