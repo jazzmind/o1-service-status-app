@@ -4,7 +4,7 @@ import React from 'react';
 import { Marker } from 'react-simple-maps';
 import { useRouter } from 'next/navigation';
 
-const ServerIcon = ({ coordinates, location, services }) => {
+const ServerIcon = ({ coordinates, name, location, services }) => {
   const router = useRouter();
 
   // Determine status color
@@ -17,7 +17,7 @@ const ServerIcon = ({ coordinates, location, services }) => {
     averageResponseTime += service.responseTime;
   });
   averageResponseTime = averageResponseTime / services.length;
-  if (averageResponseTime > 1000) {
+  if (averageResponseTime > 1000 && status !== 'red') {
     status = 'yellow';
   }
 
@@ -28,7 +28,7 @@ const ServerIcon = ({ coordinates, location, services }) => {
         fill={status}
         stroke="#fff"
         strokeWidth={2}
-        onClick={() => router.push(`/${location.toLowerCase().replace(' ', '-')}`)}
+        onClick={() => router.push(`/${name.toLowerCase().replace(' ', '-')}/${location.toLowerCase().replace(' ', '-')}`)}
         className="cursor-pointer animate-pulse"
       />
     </Marker>

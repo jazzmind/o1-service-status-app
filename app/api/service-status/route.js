@@ -7,7 +7,7 @@ export async function GET() {
     const querySnapshot = await getDocs(collection(db, 'status'));
     const services = [];
     querySnapshot.forEach((doc) => {
-      services.push({ id: doc.id, ...doc.data() });
+      services.push({ name: doc.name, ...doc.data() });
     });
 
     return NextResponse.json({ services });

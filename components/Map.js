@@ -8,17 +8,17 @@ const geoUrl = '/world.json';
 
 const serverLocations = [
   {
-    name: 'London',
+    name: 'EUK',
     coordinates: [-0.1276, 51.5074],
     location: 'London',
   },
   {
-    name: 'West Virginia',
+    name: 'USA',
     coordinates: [-80.4549, 38.5976],
     location: 'West Virginia',
   },
   {
-    name: 'Sydney',
+    name: 'AUS',
     coordinates: [151.2093, -33.8688],
     location: 'Sydney',
   },
@@ -37,7 +37,8 @@ const Map = () => {
       .then((res) => res.json())
       .then((data) => {
         setServices(data.services);
-      });
+      })
+      .catch((error) => console.error('Error fetching service status:', error));
   }, []);
 
   return (
@@ -45,25 +46,26 @@ const Map = () => {
       <ComposableMap projectionConfig={{ scale: 200, center: [10, -0] }}
       style={{ width: '100%', height: '100%' }}
 >
-        <Geographies geography={geoUrl}>
-          {({ geographies }) =>
-            geographies.map((geo) => <Geography 
-            key={geo.rsmKey} 
-            geography={geo} 
-            fill="#000"
-            stroke="#9CF"
-            className='glow'
-            />)
-          }
-        </Geographies>
-        {serverLocations.map((server) => (
-          <ServerIcon
-            key={server.name}
-            coordinates={server.coordinates}
-            location={server.location}
-            services={services.filter((s) => s.location === server.location)}
-          />
-        ))}
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => <Geography 
+              key={geo.rsmKey} 
+              geography={geo} 
+              fill="#000"
+              stroke="#9CF"
+              className='glow'
+              />)
+            }
+          </Geographies>
+          {serverLocations.map((server) => (
+            <ServerIcon
+              key={server.name}
+              coordinates={server.coordinates}
+              name={server.name}
+              location={server.location}
+              services={services.filter((s) => s.location === server.location)}
+            />
+          ))}
       </ComposableMap>
     </div>
   );

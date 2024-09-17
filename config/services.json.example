@@ -1,0 +1,35 @@
+[
+    {
+      "name": "Global API",
+      "url": "https://example.com/api",
+      "expectedResponse": {"message": "API endpoint not found"},
+      "type": "json",
+      "location": "Atlantic Ocean",
+      "region": "Global"
+  },
+  {
+      "name": "Global App",
+      "url": "https://example.com",
+      "expectedResponse": 200,
+      "type": "http_status",
+      "location": "Atlantic Ocean",
+      "region": "Global"
+  },
+  {
+      "name": "Admin API",
+      "url": "https://admin.example.com/api",
+      "expectedResponseKey": "status",
+      "expectedResponseValue": "success",
+      "type": "json_key",
+      "location": "West Virginia",
+      "region": "USA"
+  },
+  {
+      "name": "Web App",
+      "url": "https:/app.example.com",
+      "expectedResponseText": "Our Web App",
+      "type": "text",
+      "location": "West Virginia",
+      "region": "USA"
+  }
+]

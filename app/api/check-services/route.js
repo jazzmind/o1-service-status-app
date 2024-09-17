@@ -1,95 +1,93 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, updateDoc, doc, getDoc } from 'firebase/firestore';
-
-const services = [
-  {
-    name: 'Global Login API',
-    url: 'https://login-api.practera.com/stack',
-    expectedResponse: { message: 'Stack not found' },
-    type: 'json',
-    location: 'Atlantic Ocean',
-  },
-  {
-    name: 'Global Login App',
-    url: 'https://login.practera.com',
-    expectedResponse: 200,
-    type: 'http_status',
-    location: 'Atlantic Ocean',
-  },
-  {
-    name: 'USA Admin API',
-    url: 'https://usa.practera.com/api/health?appkey=1234',
-    expectedResponseKey: 'status',
-    expectedResponseValue: 'success',
-    type: 'json_key',
-    location: 'West Virginia',
-  },
-  {
-    name: 'USA Admin Web App',
-    url: 'https://usa.practera.com/lti/providers/request',
-    expectedResponseText: 'Missing consumer key',
-    type: 'text',
-    location: 'West Virginia',
-  },
-  // Add more services as needed
-];
+import { collection, addDoc, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import services from '@/config/services.json'; // Assuming services is an array of service objects
 
 export async function GET() {
   try {
     for (const service of services) {
-      const response = await fetch(service.url);
+      let response = null;
+      let responseTime = 0;
       let status = 'down';
-      let responseTime = response.headers.get('x-response-time') || 0;
+      try {
+        const startTime = Date.now();
+        response = await fetch(service.url);
+        const endTime = Date.now();
+        responseTime = endTime - startTime;
+   
+        switch (service.type) {
+          case 'json':
+            const data = await response.json();
+            if (JSON.stringify(data) === JSON.stringify(service.expectedResponse)) {
+              status = 'up';
+            }
+            break;
+          case 'http_status':
+            if (response.status === service.expectedResponse) {
+              status = 'up';
+            }
+            break;
+          case 'json_key':
+            const jsonData = await response.json();
+            if (jsonData[service.expectedResponseKey] === service.expectedResponseValue) {
+              status = 'up';
+            }
+            break;
+          case 'text':
+            const textData = await response.text();
+            if (textData.includes(service.expectedResponseText)) {
+              status = 'up';
+            }
+            break;
+          default:
+            break;
+        }
+      } catch (error) {
+        console.error(`Error fetching ${service.name} with URL ${service.url}`);
+      }
+      console.log(`Service: ${service.name}, Status: ${status}, Response Time: ${responseTime}ms`);
+      // first retrieve the most recent status record for this service - just get a single record
+      const statusCollectionRef = collection(db, 'status');
+      const statusQuery = query(
+        statusCollectionRef,
+        where('name', '==', service.name),
+        orderBy('lastChecked', 'desc'),
+        limit(1)
+      );
+      const querySnapshot = await getDocs(statusQuery);
+      let mostRecentStatus = null;
 
-      switch (service.type) {
-        case 'json':
-          const data = await response.json();
-          if (JSON.stringify(data) === JSON.stringify(service.expectedResponse)) {
-            status = 'up';
-          }
-          break;
-        case 'http_status':
-          if (response.status === service.expectedResponse) {
-            status = 'up';
-          }
-          break;
-        case 'json_key':
-          const jsonData = await response.json();
-          if (jsonData[service.expectedResponseKey] === service.expectedResponseValue) {
-            status = 'up';
-          }
-          break;
-        case 'text':
-          const textData = await response.text();
-          if (textData.includes(service.expectedResponseText)) {
-            status = 'up';
-          }
-          break;
-        default:
-          break;
+      querySnapshot.forEach((doc) => {
+        mostRecentStatus = doc.data();
+      });
+
+      let previousStatus = 'unknown';
+      if (mostRecentStatus) {
+        previousStatus = mostRecentStatus.status;
       }
 
-      // Store or update the status in Firestore
-      const serviceRef = doc(db, 'status', service.name);
-      const docSnap = await getDoc(serviceRef);
-
-      if (docSnap.exists()) {
-        await updateDoc(serviceRef, {
-          status,
-          responseTime: Number(responseTime),
-          lastChecked: new Date(),
-        });
-      } else {
-        await addDoc(collection(db, 'status'), {
+      if (status !== previousStatus) {
+        // Status has changed, record the change
+        await addDoc(collection(db, 'statusChanges'), {
           name: service.name,
-          url: service.url,
-          status,
-          responseTime: Number(responseTime),
-          lastChecked: new Date(),
+          status: status,
+          timestamp: new Date(),
           location: service.location,
+          region: service.region,
         });
       }
+
+      // now store the status in the status collection
+      await addDoc(collection(db, 'status'), {
+        name: service.name,
+        url: service.url,
+        status: status,
+        responseTime: Number(responseTime),
+        lastChecked: new Date(),
+        location: service.location,
+        region: service.region,
+      });
+    
     }
 
     return NextResponse.json({ message: 'Services checked successfully.' });
