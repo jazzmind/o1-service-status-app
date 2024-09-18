@@ -9,6 +9,7 @@ export async function GET() {
   if (envServices) {
     services = JSON.parse(envServices);
   }
+  let output = [];
   try {
     for (const service of services) {
       let response = null;
@@ -48,8 +49,10 @@ export async function GET() {
             break;
         }
       } catch (error) {
+        output.push({ name: service.name, url, status: 'down', response: response.text(), error: error.message });
         console.error(`Error fetching ${service.name} with URL ${service.url}`);
       }
+      output.push({ name: service.name, url, status, responseTime, response: response.text()});
       // first retrieve the most recent status record for this service - just get a single record
       const statusCollectionRef = collection(db, 'statusChanges');
       const statusQuery = query(
@@ -85,9 +88,9 @@ export async function GET() {
     
     }
 
-    return NextResponse.json({ message: 'Services checked successfully.' });
+    return NextResponse.json({ message: 'Services checked successfully.', response: output });
   } catch (error) {
     console.error('Error checking services:', error);
-    return NextResponse.json({ error: 'Failed to check services.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to check services.', response: output }, { status: 500 });
   }
 }

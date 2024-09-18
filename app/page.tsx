@@ -10,7 +10,7 @@ export default function Home() {
   const [loadingTestData, setLoadingTestData] = useState(false);
   const [clearingData, setClearingData] = useState(false);
   const testModeEnabled = process.env.NEXT_PUBLIC_TEST_MODE == "1";
-
+  const retro = process.env.NEXT_PUBLIC_RETRO_LOOK == "1" ?? false;
   const [globalStats, setGlobalStats] = useState({
     threeMonth: 'Loading...',
     sixMonth: 'Loading...',
@@ -62,9 +62,9 @@ export default function Home() {
   };
 
   return (
-    <main className="relative min-h-screen">
+    <main className={retro ? "relative min-h-screen crt" : "relative min-h-screen"}>
       <h1 className="text-center text-3xl py-4 text-green-500">Server Status Map</h1>
-      <div className="w-full h-[80vh]">
+      <div className="w-full h-[80vh] crt-content">
         <Map />
       </div>
       <div className="fixed bottom-1/4 py-4 ms-10 text-green-500">

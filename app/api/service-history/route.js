@@ -79,6 +79,7 @@ export async function GET(request) {
         const totalDuration = endDate - windowStart;
         let downtimeDuration = 0;
 
+
         let lastStatus = 'up';
         let lastTimestamp = windowStart;
 
@@ -122,7 +123,7 @@ export async function GET(request) {
               service: change.name,
               start: lastTimestamp,
               end: changeTime,
-              duration: downtimeDuration,
+              duration: changeTime - lastTimestamp,
             });
             
           }

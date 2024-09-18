@@ -51,12 +51,18 @@ const ServerDetailPage = () => {
           sixMonth: (Date.now() - new Date().setMonth(new Date().getMonth() - 6)),
           twelveMonth: (Date.now() - new Date().setFullYear(new Date().getFullYear() - 1)),
         };
-        const expectedDowntime = 86400000; // 1 day in milliseconds
+      
+        console.log('Total Durations:', totalDurations);
+        const expectedDowntime = {
+          threeMonth: 86400000, // 1 day in milliseconds
+          sixMonth: 86400000 * 2, // 2 days in milliseconds
+          twelveMonth: 86400000 * 3, // 3 days in milliseconds
+        }
         const expectedUptimes = {};
   
         Object.keys(totalDurations).forEach((window) => {
           const uptimePercentage =
-            ((totalDurations[window] - expectedDowntime) / totalDurations[window]) * 100;
+            ((totalDurations[window] - expectedDowntime[window] ) / totalDurations[window]) * 100;
           expectedUptimes[window] = uptimePercentage.toFixed(2);
         });
   
@@ -64,6 +70,7 @@ const ServerDetailPage = () => {
         let correct = true;
         Object.values(data.uptimeStats).forEach((stats) => {
           Object.keys(expectedUptimes).forEach((window) => {
+            console.log(`Verifying ${window}:`, stats[window], expectedUptimes[window]);
             if (stats[window] !== expectedUptimes[window]) {
               correct = false;
             }

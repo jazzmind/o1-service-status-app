@@ -69,7 +69,7 @@ const Map = () => {
               geographies.map((geo) => <Geography 
               key={geo.rsmKey} 
               geography={geo} 
-              fill="#000"
+              fill="transparent"
               stroke="#9CF"
               className='glow'
               />)
@@ -103,7 +103,6 @@ const Map = () => {
         </div>
       )}
     </div>
-
   );
 };
 

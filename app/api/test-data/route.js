@@ -47,13 +47,10 @@ async function injectTestData() {
     // Define test downtime events
     const testDowntimeEvents = [];
     const now = new Date();
-    const threeMonthsAgo = new Date(now);
-    threeMonthsAgo.setMonth(now.getMonth() - 3);
-    const sixMonthsAgo = new Date(now);
-    sixMonthsAgo.setMonth(now.getMonth() - 6);
-    const twelveMonthsAgo = new Date(now);
-    twelveMonthsAgo.setFullYear(now.getFullYear() - 1);
-
+    const threeMonthsAgo = now.getMonth() - 3 < 0 ? new Date(now.getFullYear() - 1, now.getMonth() + 9, now.getDate()) : new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+    const sixMonthsAgo = now.getMonth() - 6 < 0 ? new Date(now.getFullYear() - 1, now.getMonth() + 6, now.getDate()) : new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+    const twelveMonthsAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    console.log('threeMonthsAgo:', threeMonthsAgo, 'sixMonthsAgo:', sixMonthsAgo, 'twelveMonthsAgo:', twelveMonthsAgo);
     // Example: Create downtime events in each window
 
     for (const service of services) {
@@ -80,16 +77,21 @@ async function injectTestData() {
         // Create downtime events at specific intervals
         testDowntimeEvents.push(down);
         testDowntimeEvents.push(up);
+        const down2 = { ...down };
+        const up2 = { ...up };
+        down2.timestamp = Timestamp.fromDate(new Date(sixMonthsAgo.getTime() + 86400000));
+        up2.timestamp = Timestamp.fromDate(new Date(sixMonthsAgo.getTime() + 172800000));
 
-        down.timestamp = Timestamp.fromDate(new Date(sixMonthsAgo.getTime() + 86400000));
-        up.timestamp = Timestamp.fromDate(new Date(sixMonthsAgo.getTime() + 172800000));
-        testDowntimeEvents.push(down);
-        testDowntimeEvents.push(up);
+        testDowntimeEvents.push(down2);
+        testDowntimeEvents.push(up2);
 
-        down.timestamp = Timestamp.fromDate(new Date(threeMonthsAgo.getTime() + 86400000));
-        up.timestamp = Timestamp.fromDate(new Date(threeMonthsAgo.getTime() + 172800000));
-        testDowntimeEvents.push(down);
-        testDowntimeEvents.push(up);
+        const down3 = { ...down2 };
+        const up3 = { ...up2 };
+        down3.timestamp = Timestamp.fromDate(new Date(threeMonthsAgo.getTime() + 86400000));
+        up3.timestamp = Timestamp.fromDate(new Date(threeMonthsAgo.getTime() + 172800000));
+
+        testDowntimeEvents.push(down3);
+        testDowntimeEvents.push(up3);
     }
 
     // Add test downtime events to the database
