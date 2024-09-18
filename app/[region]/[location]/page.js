@@ -132,7 +132,28 @@ const ServerDetailPage = () => {
               </tbody>
             </table>
           </div>
-
+          {/* Show table of historical downtime events - Service, Date, Duration */}
+          <div className="mt-8">
+            <h2 className="text-2xl mb-4">Historical Downtime Events</h2>
+            <table className="w-full text-left">
+              <thead>
+                <tr>
+                  <th className="border-b-2 border-gray-600 p-2">Service</th>
+                  <th className="border-b-2 border-gray-600 p-2">Date</th>
+                  <th className="border-b-2 border-gray-600 p-2">Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyData.downtimeEvents.map((event, index) => (
+                  <tr key={index}>
+                    <td className="border-b border-gray-700 p-2">{event.service}</td>
+                    <td className="border-b border-gray-700 p-2">{new Date(event.start).toLocaleDateString()}</td>
+                    <td className="border-b border-gray-700 p-2">{Math.floor(event.duration / ( 1000 * 60)) } minutes</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {/* Test Mode Indicator */}
           {testMode && (
             <div className="mt-4">

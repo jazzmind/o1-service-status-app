@@ -4,7 +4,7 @@ import React from 'react';
 import { Marker } from 'react-simple-maps';
 import { useRouter } from 'next/navigation';
 
-const ServerIcon = ({ coordinates, name, location, services }) => {
+const ServerIcon = ({ coordinates, name, location, services, onMouseEnter, onMouseLeave }) => {
   const router = useRouter();
 
   // Determine status color
@@ -22,16 +22,20 @@ const ServerIcon = ({ coordinates, name, location, services }) => {
   }
 
   return (
-    <Marker coordinates={coordinates}>
-      <circle
-        r={10}
-        fill={status}
-        stroke="#fff"
-        strokeWidth={2}
-        onClick={() => router.push(`/${name.toLowerCase().replace(' ', '-')}/${location.toLowerCase().replace(' ', '-')}`)}
-        className="cursor-pointer animate-pulse"
-      />
-    </Marker>
+    <>
+      <Marker coordinates={coordinates}>
+        <circle
+          r={10}
+          fill={status}
+          stroke="#fff"
+          strokeWidth={2}
+          onClick={() => router.push(`/${name.toLowerCase().replace(' ', '-')}/${location.toLowerCase().replace(' ', '-')}`)}
+          className="cursor-pointer animate-pulse"
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        />
+      </Marker>
+    </>
   );
 };
 

@@ -48,6 +48,7 @@ export async function GET(request) {
     ];
 
     // Initialize uptime statistics
+    const downtimeEvents = [];
     const uptimeStats = {};
     const overallUptime = {
       threeMonth: 0,
@@ -57,7 +58,6 @@ export async function GET(request) {
 
     for (const service of filteredServices) {
       uptimeStats[service.name] = {};
-
       // Fetch status changes for this service over the last 12 months
       const statusChangesQuery = query(
         collection(db, 'statusChanges'),
@@ -115,9 +115,21 @@ export async function GET(request) {
           if (lastStatus === 'down') {
             downtimeDuration += changeTime - lastTimestamp;
           }
-
+          if (window.label === 'twelveMonth' && change.status === 'up') {
+            // since we're looking at the whole range, let's use this to create our downtime events
+            // if the service changed to up, we can add the downtime of the last status change
+            downtimeEvents.push({
+              service: change.name,
+              start: lastTimestamp,
+              end: changeTime,
+              duration: downtimeDuration,
+            });
+            
+          }
           lastStatus = change.status;
           lastTimestamp = changeTime;
+
+
         }
 
         // Handle time from last status change to end of window
@@ -145,6 +157,7 @@ export async function GET(request) {
     return NextResponse.json({
       uptimeStats,
       overallUptime,
+      downtimeEvents
     });
   } catch (error) {
     console.error('Error fetching service history:', error);

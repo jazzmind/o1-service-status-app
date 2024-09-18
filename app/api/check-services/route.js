@@ -50,13 +50,12 @@ export async function GET() {
       } catch (error) {
         console.error(`Error fetching ${service.name} with URL ${service.url}`);
       }
-      console.log(`Service: ${service.name}, Status: ${status}, Response Time: ${responseTime}ms`);
       // first retrieve the most recent status record for this service - just get a single record
-      const statusCollectionRef = collection(db, 'status');
+      const statusCollectionRef = collection(db, 'statusChanges');
       const statusQuery = query(
         statusCollectionRef,
         where('name', '==', service.name),
-        orderBy('lastChecked', 'desc'),
+        orderBy('timestamp', 'desc'),
         limit(1)
       );
       const querySnapshot = await getDocs(statusQuery);
@@ -75,23 +74,14 @@ export async function GET() {
         // Status has changed, record the change
         await addDoc(collection(db, 'statusChanges'), {
           name: service.name,
+          url: service.url,
           status: status,
+          responseTime: Number(responseTime),
           timestamp: new Date(),
           location: service.location,
           region: service.region,
         });
       }
-
-      // now store the status in the status collection
-      await addDoc(collection(db, 'status'), {
-        name: service.name,
-        url: service.url,
-        status: status,
-        responseTime: Number(responseTime),
-        lastChecked: new Date(),
-        location: service.location,
-        region: service.region,
-      });
     
     }
 

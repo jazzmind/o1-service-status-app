@@ -18,7 +18,9 @@ export async function GET(request) {
   if (mode === 'inject') {
     return injectTestData();
   } else if (mode === 'delete') {
-    return deleteTestData();
+    return deleteData(true);
+  } else if (mode === 'clear') {
+    return deleteData(false);
   } else if (mode === 'check') {
     // Check if test data exists
     const downtimeCollection = collection(db, 'statusChanges');
@@ -61,15 +63,17 @@ async function injectTestData() {
             name: service.name,
             status: "down",
             timestamp: Timestamp.fromDate(new Date(twelveMonthsAgo.getTime() + 86400000)),
+            responseTime: Math.floor(Math.random() * 1300) + 100,
             location: service.location,
             region: service.region,
         };
-
+        // responseTime is a random number between 100 and 1000
         const up = {
             isTestData: true,
             name: service.name,
             status: "up",
             timestamp: Timestamp.fromDate(new Date(twelveMonthsAgo.getTime() + 172800000)),
+            responseTime: Math.floor(Math.random() * 1300) + 100,
             location: service.location,
             region: service.region,
         };
@@ -101,28 +105,27 @@ async function injectTestData() {
   }
 }
 
-async function deleteTestData() {
+async function deleteData(testData = false) {
   try {
     // Delete test downtime events
-    const downtimeCollection = collection(db, 'statusChanges');
-    const testDataQuery = query(downtimeCollection, where('isTestData', '==', true));
-    const testDataSnapshot = await getDocs(testDataQuery);
+    const changesCollection = collection(db, 'statusChanges');
+    let dataQuery = null;
+    let dataSnapshot = null;
+    
+    if (testData) {
+        dataQuery = query(changesCollection, where('isTestData', '==', true));
+    } else {
+        dataQuery = query(changesCollection);
+    }
+    dataSnapshot = await getDocs(dataQuery);
 
-    for (const docSnap of testDataSnapshot.docs) {
+    for (const docSnap of dataSnapshot.docs) {
       await deleteDoc(docSnap.ref);
     }
 
-    const downtimeCollection2 = collection(db, 'status');
-    const testDataQuery2 = query(downtimeCollection2, where('isTestData', '==', true));
-    const testDataSnapshot2 = await getDocs(testDataQuery2);
-
-    for (const docSnap of testDataSnapshot2.docs) {
-      await deleteDoc(docSnap.ref);
-    }
-
-    return NextResponse.json({ message: 'Test data deleted successfully.' });
+    return NextResponse.json({ message: 'Data deleted successfully.' });
   } catch (error) {
-    console.error('Error deleting test data:', error);
-    return NextResponse.json({ error: 'Failed to delete test data.' }, { status: 500 });
+    console.error('Error deleting data:', error);
+    return NextResponse.json({ error: 'Failed to delete data.' }, { status: 500 });
   }
 }

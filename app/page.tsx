@@ -8,6 +8,8 @@ import StatsCard from '@/components/StatsCard';
 export default function Home() {
   const [testMode, setTestMode] = useState(false);
   const [loadingTestData, setLoadingTestData] = useState(false);
+  const [clearingData, setClearingData] = useState(false);
+  const testModeEnabled = process.env.NEXT_PUBLIC_TEST_MODE == "1";
 
   const [globalStats, setGlobalStats] = useState({
     threeMonth: 'Loading...',
@@ -18,6 +20,7 @@ export default function Home() {
   useEffect(() => {
     // Check if test mode is active
     const checkTestMode = async () => {
+      if (!testModeEnabled) return;
       setLoadingTestData(true);
       const res = await fetch('/api/test-data?mode=check');
       const data = await res.json();
@@ -34,9 +37,10 @@ export default function Home() {
 
     checkTestMode();
     fetchGlobalStats();
-  }, []);
+  }, [testModeEnabled]);
 
   const toggleTestMode = async () => {
+    if (!testModeEnabled) return;
     setLoadingTestData(true);
     if (!testMode) {
       // Inject test data
@@ -50,6 +54,13 @@ export default function Home() {
     setLoadingTestData(false);
   };
 
+  const clearData = async () => {
+    if (!testModeEnabled) return;
+    setClearingData(true);
+    await fetch('/api/test-data?mode=clear');
+    setClearingData(false);
+  };
+
   return (
     <main className="relative min-h-screen">
       <h1 className="text-center text-3xl py-4 text-green-500">Server Status Map</h1>
@@ -59,6 +70,7 @@ export default function Home() {
       <div className="fixed bottom-1/4 py-4 ms-10 text-green-500">
         <StatsCard title="Global Uptime" stats={globalStats} />
       </div>
+      {testModeEnabled && (
       <div className="flex justify-center">
         <button
           onClick={toggleTestMode}
@@ -67,7 +79,15 @@ export default function Home() {
         >
           {loadingTestData ? 'Processing...' : testMode ? 'Disable Test Mode' : 'Enable Test Mode'}
         </button>
+        <button
+          onClick={clearData}
+          className="ms-3 bg-green-500 text-black px-4 py-2 rounded-md"
+          disabled={clearingData}
+        >
+          {clearingData ? 'Processing...' :  'Clear All Data'}
+        </button>
       </div>
+      )}
     </main>
   );
 }

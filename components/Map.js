@@ -31,6 +31,24 @@ const serverLocations = [
 
 const Map = () => {
   const [services, setServices] = useState([]);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [tooltipContent, setTooltipContent] = useState({ name: '', location: '', services: [] });
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  
+  const handleMouseEnter = (server, event) => {
+    const { clientX: x, clientY: y } = event;
+    setTooltipContent({
+      name: server.name,
+      location: server.location,
+      services: services.filter((s) => s.location === server.location),
+    });
+    setTooltipPosition({ x, y });
+    setTooltipVisible(true);
+  };
+  
+  const handleMouseLeave = () => {
+    setTooltipVisible(false);
+  };
 
   useEffect(() => {
     fetch('/api/service-status')
@@ -64,10 +82,28 @@ const Map = () => {
               name={server.name}
               location={server.location}
               services={services.filter((s) => s.location === server.location)}
+              onMouseEnter={(event) => handleMouseEnter(server, event)}
+              onMouseLeave={handleMouseLeave}
             />
           ))}
       </ComposableMap>
+      {tooltipVisible && (
+        <div
+          className="custom-tooltip bg-gray-800 text-white p-2 rounded"
+          style={{ top: tooltipPosition.y, left: tooltipPosition.x }}
+        >
+          <strong>{tooltipContent.name} - {tooltipContent.location}</strong>
+          <ul>
+            {tooltipContent.services.map((service, index) => (
+              <li key={index}>
+                {service.name}: {service.status} ({service.responseTime}ms)
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
+
   );
 };
 
