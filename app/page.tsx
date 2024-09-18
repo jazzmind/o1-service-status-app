@@ -10,7 +10,7 @@ export default function Home() {
   const [loadingTestData, setLoadingTestData] = useState(false);
   const [clearingData, setClearingData] = useState(false);
   const testModeEnabled = process.env.NEXT_PUBLIC_TEST_MODE == "1";
-  const retro = process.env.NEXT_PUBLIC_RETRO_LOOK == "1" ?? false;
+  const retro = process.env.NEXT_PUBLIC_RETRO_LOOK == "1";
   const [globalStats, setGlobalStats] = useState({
     threeMonth: 'Loading...',
     sixMonth: 'Loading...',
